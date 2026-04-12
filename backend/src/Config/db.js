@@ -1,7 +1,15 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
-export const db = () => {
-    mongoose.connect("mongodb+srv://rahulsingh01062000:rahul4626l@cluster0.oklqumj.mongodb.net/next-auth-kit?retryWrites=true&w=majority&appName=Cluster0s");
-    console.log("DB connected successfully")
+export const db = async () => {
+    try {
+        await mongoose.connect(process.env.MONGO_URI);
+        console.log("DB connected successfully")
+    } catch (error) {
+        console.error("DB connection failed:", error.message);
+        process.exit(1);
+    }
+
 }
 
