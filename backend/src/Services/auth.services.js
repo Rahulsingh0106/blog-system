@@ -11,7 +11,11 @@ export const registerUser = async (data) => {
         ...data,
         password: hashed
     })
-    return user;
+
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return { user: userObj };
 }
 
 export const loginUser = async ({ email, password }) => {
@@ -22,5 +26,8 @@ export const loginUser = async ({ email, password }) => {
     if (!isValid) throw new Error("Invalid credentials");
 
     const token = await generateToken(user);
-    return { user, token };
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return { user: userObj, token };
 }
