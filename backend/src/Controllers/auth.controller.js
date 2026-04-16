@@ -1,6 +1,5 @@
 import { registerUser, loginUser } from "../Services/auth.services.js";
-import dotenv from "dotenv";
-dotenv.config();
+import redisClient from "../Config/redis.js";
 
 export const register = async (req, res) => {
     try {
@@ -44,6 +43,13 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
     try {
+        const token = req.cookies.token;
+        if (token) {
+            // Blacklist the token in Redis for 24 hours (matching maxAge)
+            await redisClient.set(token, "blacklisted", {
+                EX: 24 * 60 * 60
+            });
+        }
         res.clearCookie("token");
         res.status(200).json({
             status: true,
