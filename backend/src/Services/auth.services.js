@@ -1,8 +1,10 @@
 import User from "../models/user.model.js"
 import { hashedPassword, comparePassword } from "../utils/hash.js";
 import { generateToken } from "../utils/jwt.js";
-
+import { validateRegister, validateLogin } from "../Validations/auth.validate.js";
 export const registerUser = async (data) => {
+    const { error } = validateRegister(data);
+    if (error) throw new Error(error.details[0].message);
     const exist = await User.findOne({ email: data['email'] });
     if (exist) throw new Error("User already exist");
 
@@ -19,6 +21,9 @@ export const registerUser = async (data) => {
 }
 
 export const loginUser = async ({ email, password }) => {
+    const { error } = validateLogin({ email, password });
+    if (error) throw new Error(error.details[0].message);
+
     const user = await User.findOne({ email });
     if (!user) throw new Error("Invalid credentials");
 
