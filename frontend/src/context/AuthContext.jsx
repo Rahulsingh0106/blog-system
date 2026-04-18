@@ -54,18 +54,24 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await api.get('/logout');
-      setUser(null);
-      return { status: true };
+      const res = await api.get('/logout');
+      if (res.data.status) {
+        setUser(null);
+        return { status: true };
+      }
     } catch (error) {
-      return { status: false, msg: error.message };
+      console.error("Logout failed", error);
+      return { status: false };
     }
   };
 
+  const updateUser = (userData) => {
+    setUser(userData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, loading, checkAuth }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, checkAuth, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
 };
-

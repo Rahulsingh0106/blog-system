@@ -59,7 +59,23 @@ const Navbar = ({ onSearch }) => {
               <PlusSquare size={22} />
             </Link>
             <Link to="/profile" style={{ color: 'var(--text)', textDecoration: 'none' }} title="Profile">
-              <User size={22} />
+              {user.image ? (
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  overflow: 'hidden',
+                  border: '2px solid var(--primary)'
+                }}>
+                  <img 
+                    src={`http://localhost:5000${user.image}`} 
+                    alt="Profile" 
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
+                  />
+                </div>
+              ) : (
+                <User size={22} />
+              )}
             </Link>
             <button 
               onClick={() => setShowLogoutModal(true)}

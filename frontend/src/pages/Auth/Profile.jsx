@@ -8,21 +8,24 @@ import { User as UserIcon, Mail, Camera, Save, X as CloseIcon, Edit3 } from 'luc
 import ConfirmationModal from '../../components/ConfirmationModal';
 
 const Profile = () => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const [userPosts, setUserPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, postId: null });
+  
+  const SERVER_URL = 'http://localhost:5000';
 
   // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);
   const [tempName, setTempName] = useState('');
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null);
   const fileInputRef = React.useRef(null);
 
   useEffect(() => {
     if (user) {
       setTempName(user.name);
-      setAvatarPreview(user.avatar || null);
+      setAvatarPreview(user.image ? `${SERVER_URL}${user.image}` : null);
     }
 
     const fetchUserPosts = async () => {
@@ -44,7 +47,8 @@ const Profile = () => {
   const handleEditToggle = () => {
     if (isEditing) {
       setTempName(user.name);
-      setAvatarPreview(user.avatar || null);
+      setAvatarPreview(user.image ? `${SERVER_URL}${user.image}` : null);
+      setSelectedFile(null);
     }
     setIsEditing(!isEditing);
   };
@@ -52,6 +56,7 @@ const Profile = () => {
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setAvatarPreview(reader.result);
@@ -62,10 +67,27 @@ const Profile = () => {
 
   const handleUpdateProfile = async (e) => {
     e.preventDefault();
-    // Backend Implementation Placeholder
-    console.log("Updating profile with:", { name: tempName, avatar: avatarPreview });
-    setIsEditing(false);
-    alert("Profile update UI complete. Backend integration required.");
+    try {
+      const formData = new FormData();
+      formData.append('name', tempName);
+      if (selectedFile) {
+        formData.append('image', selectedFile);
+      }
+
+      const res = await api.put('/profile/update', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (res.data.status) {
+        updateUser(res.data.data);
+        setIsEditing(false);
+        setSelectedFile(null);
+      }
+    } catch (error) {
+      alert(error.response?.data?.msg || "Update failed");
+    }
   };
 
   const handleDeleteClick = (postId) => {

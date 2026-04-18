@@ -8,7 +8,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -16,7 +16,7 @@ const Login = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
-    
+
     try {
       const res = await login(email, password);
       if (res.status) {
@@ -33,17 +33,17 @@ const Login = () => {
 
   return (
     <div className="flex-center min-h-screen w-full">
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass" 
+        className="glass"
         style={{ width: '100%', maxWidth: '440px', padding: '40px' }}
       >
         <div style={{ marginBottom: '32px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '8px' }}>Sign In</h2>
           <p className="text-muted">Enter your email and password to access your account</p>
         </div>
-        
+
         {error && (
           <div style={{ padding: '10px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid #ef4444', borderRadius: '8px', color: '#ef4444', marginBottom: '20px', fontSize: '0.85rem', textAlign: 'center' }}>
             {error}
@@ -55,9 +55,9 @@ const Login = () => {
             <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: '500', marginBottom: '8px' }}>
               Email Address
             </label>
-            <input 
-              type="email" 
-              className="modern-input" 
+            <input
+              type="email"
+              className="modern-input"
               placeholder="name@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -74,9 +74,9 @@ const Login = () => {
                 Forgot password?
               </a>
             </div>
-            <input 
-              type="password" 
-              className="modern-input" 
+            <input
+              type="password"
+              className="modern-input"
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
