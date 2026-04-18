@@ -7,6 +7,7 @@ import { connectRedis } from "./src/Config/redis.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import router from "./routes.js";
+import initializeWorker from "./src/Utils/post.worker.js";
 
 const app = express();
 app.use(express.json());
@@ -19,6 +20,7 @@ app.use('/uploads', express.static('uploads'));
 
 db();
 connectRedis();
+initializeWorker();
 
 app.use("/api/v1", router);
 const port = process.env.PORT || 5000;

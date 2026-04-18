@@ -1,5 +1,6 @@
 import Post from "../Models/post.model.js";
 import { validateCreatePost, validateUpdatePost } from "../Validations/post.validate.js";
+import { schedulePostPublish } from "../Utils/post.queue.js";
 export const allPosts = async () => {
     try {
         const result = await Post.find({});
@@ -17,7 +18,10 @@ export const createPost = async (data, user_id) => {
         if (error) throw new Error(error.details[0].message);
 
         const result = await Post.create({ ...data, user_id: user_id });
-        if (error) throw new Error("Something went wrong");
+        
+        if (data.status === 'scheduled' && data.scheduledAt) {
+            await schedulePostPublish(result._id, data.scheduledAt);
+        }
 
         const postData = result.toObject();
         return { data: postData };
@@ -34,8 +38,12 @@ export const updatePost = async (data, user_id) => {
         const result = await Post.findOne({ _id: data.post_id, user_id: user_id });
         if (!result) throw new Error("Post not found");
 
-        const updatedPost = await Post.updateOne({ _id: data.post_id }, { $set: { title: data.title, content: data.content } });
+        const updatedPost = await Post.updateOne({ _id: data.post_id }, { $set: { title: data.title, content: data.content, status: data.status, scheduledAt: data.scheduledAt } });
         if (!updatedPost) throw new Error("Something went wrong");
+
+        if (data.status === 'scheduled' && data.scheduledAt) {
+            await schedulePostPublish(data.post_id, data.scheduledAt);
+        }
 
         const post = await Post.findOne({ _id: data.post_id });
         const postData = post.toObject();

@@ -4,6 +4,8 @@ export const validateCreatePost = (data) => {
     const schema = Joi.object({
         title: Joi.string().required(),
         content: Joi.string().required(),
+        status: Joi.string().valid('draft', 'published', 'scheduled').optional(),
+        scheduledAt: Joi.date().iso().optional(),
     })
     return schema.validate(data, { errors: { wrap: { label: false } } });
 }
@@ -13,6 +15,8 @@ export const validateUpdatePost = (data) => {
         post_id: Joi.string().required(),
         title: Joi.string().required(),
         content: Joi.string().required(),
+        status: Joi.string().valid('draft', 'published', 'scheduled').optional(),
+        scheduledAt: Joi.date().iso().optional(),
     })
     return schema.validate(data, { errors: { wrap: { label: false } } });
 } 
