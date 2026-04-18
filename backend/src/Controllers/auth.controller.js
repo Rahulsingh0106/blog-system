@@ -1,4 +1,4 @@
-import { registerUser, loginUser } from "../Services/auth.services.js";
+import { registerUser, loginUser, updateUserProfile } from "../Services/auth.services.js";
 import redisClient from "../Config/redis.js";
 
 export const register = async (req, res) => {
@@ -61,6 +61,35 @@ export const logout = async (req, res) => {
             status: false,
             data: {},
             msg: "Something went wrong"
+        })
+    }
+}
+
+export const updateProfile = async (req, res) => {
+    try {
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.image = `/uploads/${req.file.filename}`;
+        }
+        
+        const user = await updateUserProfile(updateData, req.user.id);
+        res.clearCookie("token");
+        res.cookie("token", user.token, {
+            httpOnly: true,
+            secure: false,
+            sameSite: "lax",
+            maxAge: 24 * 60 * 60 * 1000
+        });
+        res.status(200).json({
+            status: true,
+            data: user.user,
+            msg: "User updated successfully."
+        })
+    } catch (error) {
+        res.status(400).json({
+            status: false,
+            data: {},
+            msg: error.message
         })
     }
 }

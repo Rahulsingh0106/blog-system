@@ -1,5 +1,5 @@
 import Post from "../Models/post.model.js";
-import { validateCreatePost } from "../Validations/post.validate.js";
+import { validateCreatePost, validateUpdatePost } from "../Validations/post.validate.js";
 export const allPosts = async () => {
     try {
         const result = await Post.find({});
@@ -20,8 +20,6 @@ export const createPost = async (data, user_id) => {
         if (error) throw new Error("Something went wrong");
 
         const postData = result.toObject();
-        delete postData.user_id;
-
         return { data: postData };
     } catch (error) {
         throw new Error(error);
@@ -30,7 +28,7 @@ export const createPost = async (data, user_id) => {
 
 export const updatePost = async (data, user_id) => {
     try {
-        const { error } = validateCreatePost(data);
+        const { error } = validateUpdatePost(data);
         if (error) throw new Error(error.details[0].message);
 
         const result = await Post.findOne({ _id: data.post_id, user_id: user_id });
@@ -41,7 +39,6 @@ export const updatePost = async (data, user_id) => {
 
         const post = await Post.findOne({ _id: data.post_id });
         const postData = post.toObject();
-        delete postData.user_id;
 
         return { data: postData };
     } catch (error) {
@@ -55,7 +52,6 @@ export const postById = async (post_id) => {
         if (!post) throw new Error("Post not found");
 
         const postData = post.toObject();
-        delete postData.user_id;
 
         return { data: postData };
     } catch (error) {

@@ -5,7 +5,7 @@ export const posts = async (req, res) => {
         const result = await allPosts();
         res.status(200).json({
             status: true,
-            data: result,
+            data: result.data,
             msg: "Posts fetched successfully."
         })
     }
@@ -71,7 +71,7 @@ export const getPostById = async (req, res) => {
 
 export const deletePostById = async (req, res) => {
     try {
-        deletePost(req.params.id, req.user.id);
+        await deletePost(req.params.id, req.user.id);
         res.status(200).json({
             status: true,
             data: {},

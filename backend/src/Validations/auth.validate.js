@@ -16,3 +16,11 @@ export const validateLogin = (data) => {
 
     return schema.validate(data, { errors: { wrap: { label: false } } });
 }
+
+export const validateUpdateProfile = (data) => {
+    const schema = Joi.object({
+        image: Joi.string(),
+        name: Joi.string().required(),
+    })
+    return schema.validate(data, { errors: { wrap: { label: false } } });
+}

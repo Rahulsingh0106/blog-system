@@ -1,7 +1,7 @@
-import User from "../models/user.model.js"
+import User from "../Models/user.model.js"
 import { hashedPassword, comparePassword } from "../utils/hash.js";
 import { generateToken } from "../utils/jwt.js";
-import { validateRegister, validateLogin } from "../Validations/auth.validate.js";
+import { validateRegister, validateLogin, validateUpdateProfile } from "../Validations/auth.validate.js";
 export const registerUser = async (data) => {
     const { error } = validateRegister(data);
     if (error) throw new Error(error.details[0].message);
@@ -29,6 +29,20 @@ export const loginUser = async ({ email, password }) => {
 
     const isValid = await comparePassword(password, user.password);
     if (!isValid) throw new Error("Invalid credentials");
+
+    const token = await generateToken(user);
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    return { user: userObj, token };
+}
+
+export const updateUserProfile = async (data, user_id) => {
+    const { error } = validateUpdateProfile(data);
+    if (error) throw new Error(error.details[0].message);
+
+    const user = await User.findByIdAndUpdate(user_id, data, { new: true });
+    if (!user) throw new Error("User not found");
 
     const token = await generateToken(user);
     const userObj = user.toObject();
