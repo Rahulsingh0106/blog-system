@@ -5,6 +5,7 @@ import PostCard from '../../components/PostCard';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/useAuth';
 import ConfirmationModal from '../../components/ConfirmationModal';
+import { io } from 'socket.io-client';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -29,6 +30,23 @@ const Dashboard = () => {
 
   useEffect(() => {
     fetchPosts();
+
+    const socket = io("http://localhost:5000");
+
+    socket.on("post_published", (newPost) => {
+      console.log("Real-time update: New post published!", newPost);
+      setPosts((prevPosts) => {
+        // Avoid duplicate additions
+        if (prevPosts.some(p => p._id === newPost._id)) return prevPosts;
+        const updated = [newPost, ...prevPosts];
+        setFilteredPosts(updated);
+        return updated;
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const handleSearch = (query) => {

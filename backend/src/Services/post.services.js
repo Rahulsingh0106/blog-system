@@ -3,7 +3,7 @@ import { validateCreatePost, validateUpdatePost } from "../Validations/post.vali
 import { schedulePostPublish } from "../Utils/post.queue.js";
 export const allPosts = async () => {
     try {
-        const result = await Post.find({});
+        const result = await Post.find({ status: 'published' }).sort({ createdAt: -1 });
         if (!result) throw new Error("No posts found");
 
         return { data: result };

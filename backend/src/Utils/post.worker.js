@@ -1,23 +1,25 @@
 import { Worker } from "bullmq";
 import { redisConnection } from "../Config/redis.config.js";
 import Post from "../Models/post.model.js";
+import { getIO } from "../Config/socket.js";
+import logger from "./logger.js";
 
 const initializeWorker = () => {
     const worker = new Worker(
         "post-publish-queue",
         async (job) => {
             const { postId } = job.data;
-            console.log(`[Worker] Processing publish job for post: ${postId}`);
+            logger.info(`[Worker] Processing publish job for post: ${postId}`);
 
             try {
                 const post = await Post.findById(postId);
                 if (!post) {
-                    console.error(`[Worker] Post ${postId} not found. Skipping.`);
+                    logger.error(`[Worker] Post ${postId} not found. Skipping.`);
                     return;
                 }
 
                 if (post.status === "published") {
-                    console.log(`[Worker] Post ${postId} is already published. Skipping.`);
+                    logger.info(`[Worker] Post ${postId} is already published. Skipping.`);
                     return;
                 }
 
@@ -25,9 +27,16 @@ const initializeWorker = () => {
                 post.status = "published";
                 await post.save();
 
-                console.log(`[Worker] Post ${postId} published successfully!`);
+                logger.info(`[Worker] Post ${postId} published successfully!`);
+
+                // Emit socket event for real-time update
+                const io = getIO();
+                if (io) {
+                    io.emit("post_published", post);
+                    logger.info(`[Worker] Emitted post_published for post: ${postId}`);
+                }
             } catch (error) {
-                console.error(`[Worker] Error publishing post ${postId}:`, error.message);
+                logger.error(`[Worker] Error publishing post ${postId}: ${error.message}`);
                 throw error; // Let BullMQ handle the retry if configured
             }
         },
@@ -35,14 +44,14 @@ const initializeWorker = () => {
     );
 
     worker.on("completed", (job) => {
-        console.log(`[Worker] Job ${job.id} completed!`);
+        logger.info(`[Worker] Job ${job.id} completed!`);
     });
 
     worker.on("failed", (job, err) => {
-        console.error(`[Worker] Job ${job.id} failed with error: ${err.message}`);
+        logger.error(`[Worker] Job ${job.id} failed with error: ${err.message}`);
     });
 
-    console.log("[Worker] Post Publish Worker initialized and listening...");
+    logger.info("[Worker] Post Publish Worker initialized and listening...");
     return worker;
 };
 

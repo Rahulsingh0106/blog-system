@@ -1,5 +1,6 @@
 import { Queue } from "bullmq";
 import { redisConnection } from "../Config/redis.config.js";
+import logger from "./logger.js";
 
 export const postQueue = new Queue("post-publish-queue", {
     connection: redisConnection,
@@ -23,9 +24,9 @@ export const schedulePostPublish = async (postId, scheduledAt) => {
                 removeOnFail: false,
             }
         );
-        console.log(`[Queue] Post ${postId} scheduled to publish in ${delay}ms`);
+        logger.info(`[Queue] Post ${postId} scheduled to publish in ${delay}ms`);
     } else {
-        console.warn(`[Queue] Scheduled time for post ${postId} is in the past. Job not added.`);
+        logger.warn(`[Queue] Scheduled time for post ${postId} is in the past. Job not added.`);
     }
 };
 
@@ -37,5 +38,5 @@ export const schedulePostPublish = async (postId, scheduledAt) => {
 export const cancelScheduledPost = async (postId) => {
     // In a more advanced implementation, we'd find the job by its ID or a unique name and remove it.
     // BullMQ jobs can be given a custom ID to make this easier.
-    console.log(`[Queue] Cancellation requested for post ${postId} (Logic not implemented for simplicity)`);
+    logger.info(`[Queue] Cancellation requested for post ${postId} (Logic not implemented for simplicity)`);
 }

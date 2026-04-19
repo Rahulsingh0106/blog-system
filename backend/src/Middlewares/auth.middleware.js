@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import redisClient from "../Config/redis.js";
+import { redisConnection } from "../Config/redis.config.js";
 
 
 export const protect = async (req, res, next) => {
@@ -9,7 +9,7 @@ export const protect = async (req, res, next) => {
     }
 
     try {
-        const isBlacklisted = await redisClient.get(token);
+        const isBlacklisted = await redisConnection.get(token);
         if (isBlacklisted) {
             return res.status(401).json({ message: "Session expired. Please login again." });
         }

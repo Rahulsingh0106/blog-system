@@ -1,5 +1,5 @@
 import { registerUser, loginUser, updateUserProfile } from "../Services/auth.services.js";
-import redisClient from "../Config/redis.js";
+import { redisConnection } from "../Config/redis.config.js";
 
 export const register = async (req, res) => {
     try {
@@ -46,9 +46,7 @@ export const logout = async (req, res) => {
         const token = req.cookies.token;
         if (token) {
             // Blacklist the token in Redis for 24 hours (matching maxAge)
-            await redisClient.set(token, "blacklisted", {
-                EX: 24 * 60 * 60
-            });
+            await redisConnection.set(token, "blacklisted", "EX", 24 * 60 * 60);
         }
         res.clearCookie("token");
         res.status(200).json({

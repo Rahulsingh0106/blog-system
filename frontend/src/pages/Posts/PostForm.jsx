@@ -5,7 +5,7 @@ import "easymde/dist/easymde.min.css";
 import api from '../../utils/api';
 import Navbar from '../../components/Navbar';
 import { motion } from 'framer-motion';
-import { Save, ChevronLeft } from 'lucide-react';
+import { Save, ChevronLeft, Calendar, Clock } from 'lucide-react';
 
 const PostForm = () => {
   const { id } = useParams();
@@ -14,6 +14,20 @@ const PostForm = () => {
   const [content, setContent] = useState('');
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(false);
+  const [isScheduled, setIsScheduled] = useState(false);
+  const [scheduledDate, setScheduledDate] = useState('');
+  const [status, setStatus] = useState('');
+
+  // Calculate min and max date/time for the current month
+  const now = new Date();
+  const formatDateTime = (date) => {
+    const offset = date.getTimezoneOffset() * 60000;
+    return (new Date(date - offset)).toISOString().slice(0, 16);
+  };
+
+  const minDateTime = formatDateTime(new Date());
+  const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59);
+  const maxDateTime = formatDateTime(lastDayOfMonth);
 
   useEffect(() => {
     if (id) {
@@ -24,6 +38,11 @@ const PostForm = () => {
           if (res.data.status) {
             setTitle(res.data.data.title);
             setContent(res.data.data.content);
+            setStatus(res.data.data.status);
+            if (res.data.data.status === 'scheduled' && res.data.data.scheduledAt) {
+              setIsScheduled(true);
+              setScheduledDate(formatDateTime(new Date(res.data.data.scheduledAt)));
+            }
           }
         } catch (error) {
           console.error("Failed to fetch post", error);
@@ -60,7 +79,13 @@ const PostForm = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = { title, content };
+      const payload = { 
+        title, 
+        content,
+        status: isScheduled ? 'scheduled' : (status === 'published' ? 'published' : 'published'),
+        scheduledAt: isScheduled ? scheduledDate : null
+      };
+      
       let res;
       if (id) {
         res = await api.post('/posts/update', { ...payload, post_id: id });
@@ -125,13 +150,55 @@ const PostForm = () => {
               </div>
             </div>
 
+            {status !== 'published' && (
+              <div style={{ marginBottom: '30px', borderTop: '1px solid var(--border)', paddingTop: '20px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '15px' }}>
+                  <input 
+                    type="checkbox" 
+                    id="schedule-toggle"
+                    checked={isScheduled}
+                    onChange={(e) => setIsScheduled(e.target.checked)}
+                    style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                  />
+                  <label htmlFor="schedule-toggle" style={{ cursor: 'pointer', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Clock size={18} className="text-primary" /> Schedule for later
+                  </label>
+                </div>
+
+                {isScheduled && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    style={{ paddingLeft: '32px' }}
+                  >
+                    <label style={{ display: 'block', marginBottom: '8px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      Pick a date and time (Current month only)
+                    </label>
+                    <div style={{ position: 'relative', maxWidth: '300px' }}>
+                      <input 
+                        type="datetime-local" 
+                        className="modern-input"
+                        value={scheduledDate}
+                        onChange={(e) => setScheduledDate(e.target.value)}
+                        min={minDateTime}
+                        max={maxDateTime}
+                        required={isScheduled}
+                        style={{ paddingLeft: '40px' }}
+                      />
+                      <Calendar size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            )}
+
             <button 
               type="submit" 
               className="modern-button" 
               disabled={loading}
               style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 40px' }}
             >
-              <Save size={20} /> {id ? 'Update Post' : 'Publish Post'}
+              <Save size={20} /> Submit
             </button>
           </form>
         </motion.div>
