@@ -31,7 +31,8 @@ const Dashboard = () => {
   useEffect(() => {
     fetchPosts();
 
-    const socket = io("http://localhost:5000");
+    const socketUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
+    const socket = io(socketUrl);
 
     socket.on("post_published", (newPost) => {
       console.log("Real-time update: New post published!", newPost);

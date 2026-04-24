@@ -10,6 +10,8 @@ const Navbar = ({ onSearch }) => {
   const navigate = useNavigate();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
 
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
+
   const handleLogout = async () => {
     setShowLogoutModal(false);
     const res = await logout();
@@ -68,7 +70,7 @@ const Navbar = ({ onSearch }) => {
                   border: '2px solid var(--primary)'
                 }}>
                   <img 
-                    src={`http://localhost:5000${user.image}`} 
+                    src={`${SERVER_URL}${user.image}`} 
                     alt="Profile" 
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }} 
                   />

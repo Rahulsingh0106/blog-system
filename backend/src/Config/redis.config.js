@@ -8,6 +8,16 @@ const redisConfig = {
     host: process.env.REDIS_HOST || "127.0.0.1",
     port: process.env.REDIS_PORT || 6379,
     maxRetriesPerRequest: null,
+    retryStrategy(times) {
+        const maxRetries = 5;
+        if (times > maxRetries) {
+            logger.error(`Redis connection failed after ${maxRetries} retries. Stopping reconnection attempts.`);
+            return null; // Return null to stop retrying
+        }
+        const delay = Math.min(times * 1000, 3000);
+        logger.info(`Retrying Redis connection in ${delay}ms... (Attempt ${times} of ${maxRetries})`);
+        return delay;
+    }
 };
 export const redisConnection = new Redis(redisConfig);
 

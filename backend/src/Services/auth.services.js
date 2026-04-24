@@ -1,6 +1,6 @@
 import User from "../Models/user.model.js"
-import { hashedPassword, comparePassword } from "../utils/hash.js";
-import { generateToken } from "../utils/jwt.js";
+import { hashedPassword, comparePassword } from "../Utils/hash.js";
+import { generateToken } from "../Utils/jwt.js";
 import { validateRegister, validateLogin, validateUpdateProfile } from "../Validations/auth.validate.js";
 export const registerUser = async (data) => {
     const { error } = validateRegister(data);

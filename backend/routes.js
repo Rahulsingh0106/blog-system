@@ -7,6 +7,7 @@ import { posts, create, update, getPostById, deletePostById } from "./src/Contro
 import { getCSRFToken } from "./src/Controllers/security.controller.js";
 import { verifyCSRF } from "./src/Middlewares/csrf.middleware.js";
 
+
 // auth APIs
 router.get('/csrf-token', getCSRFToken);
 router.post("/login", login);

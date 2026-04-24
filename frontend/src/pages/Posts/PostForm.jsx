@@ -82,8 +82,8 @@ const PostForm = () => {
       const payload = { 
         title, 
         content,
-        status: isScheduled ? 'scheduled' : (status === 'published' ? 'published' : 'published'),
-        scheduledAt: isScheduled ? scheduledDate : null
+        status: isScheduled ? 'scheduled' : 'published',
+        scheduledAt: isScheduled ? new Date(scheduledDate).toISOString() : null
       };
       
       let res;

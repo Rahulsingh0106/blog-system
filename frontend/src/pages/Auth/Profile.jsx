@@ -13,7 +13,7 @@ const Profile = () => {
   const [loading, setLoading] = useState(true);
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, postId: null });
   
-  const SERVER_URL = 'http://localhost:5000';
+  const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:5000';
 
   // Profile Edit State
   const [isEditing, setIsEditing] = useState(false);

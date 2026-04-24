@@ -1,7 +1,6 @@
 import { Worker } from "bullmq";
 import { redisConnection } from "../Config/redis.config.js";
 import Post from "../Models/post.model.js";
-import { getIO } from "../Config/socket.js";
 import logger from "./logger.js";
 
 const initializeWorker = () => {
@@ -29,12 +28,9 @@ const initializeWorker = () => {
 
                 logger.info(`[Worker] Post ${postId} published successfully!`);
 
-                // Emit socket event for real-time update
-                const io = getIO();
-                if (io) {
-                    io.emit("post_published", post);
-                    logger.info(`[Worker] Emitted post_published for post: ${postId}`);
-                }
+                // Emit socket event via Redis Pub/Sub for cross-container communication
+                await redisConnection.publish("socket:post_published", JSON.stringify(post));
+                logger.info(`[Worker] Published socket event to Redis for post: ${postId}`);
             } catch (error) {
                 logger.error(`[Worker] Error publishing post ${postId}: ${error.message}`);
                 throw error; // Let BullMQ handle the retry if configured

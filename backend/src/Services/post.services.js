@@ -1,6 +1,7 @@
 import Post from "../Models/post.model.js";
 import { validateCreatePost, validateUpdatePost } from "../Validations/post.validate.js";
 import { schedulePostPublish } from "../Utils/post.queue.js";
+import { getIO } from "../Config/socket.js";
 export const allPosts = async () => {
     try {
         const result = await Post.find({ status: 'published' }).sort({ createdAt: -1 });
@@ -21,6 +22,9 @@ export const createPost = async (data, user_id) => {
         
         if (data.status === 'scheduled' && data.scheduledAt) {
             await schedulePostPublish(result._id, data.scheduledAt);
+        } else if (data.status === 'published') {
+            const io = getIO();
+            if (io) io.emit("post_published", result.toObject());
         }
 
         const postData = result.toObject();
@@ -41,12 +45,15 @@ export const updatePost = async (data, user_id) => {
         const updatedPost = await Post.updateOne({ _id: data.post_id }, { $set: { title: data.title, content: data.content, status: data.status, scheduledAt: data.scheduledAt } });
         if (!updatedPost) throw new Error("Something went wrong");
 
-        if (data.status === 'scheduled' && data.scheduledAt) {
-            await schedulePostPublish(data.post_id, data.scheduledAt);
-        }
-
         const post = await Post.findOne({ _id: data.post_id });
         const postData = post.toObject();
+
+        if (data.status === 'scheduled' && data.scheduledAt) {
+            await schedulePostPublish(data.post_id, data.scheduledAt);
+        } else if (data.status === 'published') {
+            const io = getIO();
+            if (io) io.emit("post_published", postData);
+        }
 
         return { data: postData };
     } catch (error) {
