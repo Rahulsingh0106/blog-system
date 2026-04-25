@@ -25,7 +25,11 @@ initSocket(httpServer);
 app.use(express.json());
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: [
+        process.env.FRONTEND_URL,
+        process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, "") : null,
+        "http://localhost:5173"
+    ].filter(Boolean),
     credentials: true
 }));
 app.use(cookieParser())

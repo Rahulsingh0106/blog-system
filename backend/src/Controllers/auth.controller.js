@@ -23,8 +23,8 @@ export const login = async (req, res) => {
         const user = await loginUser(req.body);
         res.cookie("token", user.token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000
         });
         res.status(200).json({
@@ -74,8 +74,8 @@ export const updateProfile = async (req, res) => {
         res.clearCookie("token");
         res.cookie("token", user.token, {
             httpOnly: true,
-            secure: false,
-            sameSite: "lax",
+            secure: true,
+            sameSite: "none",
             maxAge: 24 * 60 * 60 * 1000
         });
         res.status(200).json({
